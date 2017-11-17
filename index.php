@@ -21,8 +21,7 @@ if (!$user->count()) {
     }
 }
 
-INSERT/*
-*/
+INSERT
 $userInsert = DB::getInstance()->insert('users', array(
     'username' => 'elias',
     'password' => 'password',
@@ -36,7 +35,7 @@ if ($userInsert === TRUE ) {
     echo "Could not complete insert, error: " . $userInsert[2];
 }
 
-/*UPDATE
+UPDATE
 $userUpdate = DB::getInstance()->update('users', 11, array(
     'password' => 'newpass',
     'username' => 'dale'
@@ -47,3 +46,7 @@ if ($userUpdate === TRUE ) {
 } else {
     echo "Could not complete update, error: " . $userUpdate[2];
 }*/
+
+if (Session::exists('success')) {
+    echo Session::flash('success');
+}
