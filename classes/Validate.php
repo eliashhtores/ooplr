@@ -3,7 +3,7 @@
 class Validate
 {
     private $passed = false;
-    private $erros = array();
+    private $errors = array();
     private $db = null;
 
     public function __construct()
@@ -49,7 +49,7 @@ class Validate
             }
         }
 
-        if (empty($this->erros)) {
+        if (empty($this->errors)) {
             $this->passed = true;
         }
         return $this;
@@ -57,12 +57,12 @@ class Validate
 
     private function addError($error)
     {
-        $this->erros[] = $error;
+        $this->errors[] = $error;
     }
 
     public function errors()
     {
-        return $this->erros;
+        return $this->errors;
     }
 
     public function passed()
