@@ -46,7 +46,11 @@ if ($userUpdate === TRUE ) {
 } else {
     echo "Could not complete update, error: " . $userUpdate[2];
 }*/
-
+/*
 if (Session::exists('success')) {
     echo Session::flash('success');
+}
+*/
+if (Session::exists('home')){
+    echo '<p>' . Session::flash('home') .'</p>';
 }

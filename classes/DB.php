@@ -13,7 +13,8 @@ class DB
     private function __construct()
     {
         try {
-            $this->pdo = new PDO('mysql:host=' . Config::get('mysql/host') . ';dbname=' . Config::get('mysql/db'), Config::get('mysql/username'), Config::get('mysql/password'));
+            $this->pdo = new PDO('mysql:host=' . Config::get('mysql/host') . ';dbname=' . Config::get('mysql/db'), Config::get('mysql/username'), Config::get('mysql/password'), array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8"));
+            $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_WARNING);
         } catch (PDOException $e) {
             die($e->getMessage());
         }
@@ -43,7 +44,8 @@ class DB
                 $this->result = $this->query->fetchAll(PDO::FETCH_OBJ);
                 $this->count = $this->query->rowCount();
             } else {
-                $this->error = $this->query->errorInfo();
+                $this->error = $this->query->errorInfo()[2];
+                //echo $this->query->errorInfo()[2];
             }
         }
         return $this;
@@ -98,7 +100,7 @@ class DB
                 return true;
             }
         }
-        return $this->error;
+        return $this->error();
     }
 
     public function update($table, $id, $fields)
