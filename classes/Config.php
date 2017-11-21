@@ -18,7 +18,7 @@ class Config
             return $config;
         }
 
-        return FALSE;
+        return false;
     }
 
 }
