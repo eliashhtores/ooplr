@@ -3,12 +3,13 @@
 class User
 {
 
-    private $db, $data, $sessionName, $isLoggegIn;
+    private $db, $data, $sessionName, $isLoggegIn, $cookieName;
 
     public function __construct($user = null)
     {
         $this->db = DB::getInstance();
         $this->sessionName = Config::get('session/session_name');
+        $this->cookieName = Config::get('remember/cookie_name');
 
         if (!$user) {
             if (Session::exists($this->sessionName)) {
@@ -47,13 +48,28 @@ class User
         return false;
     }
 
-    public function login($username = null, $password= null)
+    public function login($username = null, $password = null, $remember = null)
     {
         $user = $this->find($username);
 
         if ($user) {
             if($this->data()->password === Hash::make($password, $this->data()->salt)) {
                 Session::put($this->sessionName, $this->data()->id);
+                if ($remember) {
+                    $hash = Hash::unique();
+                    $hashCheck = $this->db->get('user_session', array('user_id', '=', $this->data()->id));
+
+                    if (!$hashCheck->count()) {
+                        $this->db->insert('user_session', array(
+                            'user_id' => $this->data()->id,
+                            'hash' => $hash
+                        ));
+                    } else {
+                        $hash = $hashCheck->getFirst()->$hash;
+                    }
+
+                    Cookie::put($this->cookieName, $hash, Config::get('remember/cookie_expiry'));
+                }
                 return true;
             }
             return false;
