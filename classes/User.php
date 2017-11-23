@@ -18,7 +18,7 @@ class User
                 if ($this->find($user)) {
                     $this->isLoggegIn = true;
                 } else {
-                        //process logout
+                    //process logout
                 }
             }
         } else {
@@ -35,12 +35,13 @@ class User
         }
     }
 
-    public function find($user = null) {
+    public function find($user = null)
+    {
         if ($user) {
             $field = (is_numeric($user)) ? 'id' : 'username';
             $data = $this->db->get('users', array($field, '=', $user));
 
-            if ($data->count()){
+            if ($data->count()) {
                 $this->data = $data->getFirst();
                 return true;
             }
@@ -48,37 +49,45 @@ class User
         return false;
     }
 
-    public function login($username = null, $password = null, $remember = null)
+    public function login($username = null, $password = null, $remember = false)
     {
-        $user = $this->find($username);
 
-        if ($user) {
-            if($this->data()->password === Hash::make($password, $this->data()->salt)) {
-                Session::put($this->sessionName, $this->data()->id);
-                if ($remember) {
-                    $hash = Hash::unique();
-                    $hashCheck = $this->db->get('user_session', array('user_id', '=', $this->data()->id));
 
-                    if (!$hashCheck->count()) {
-                        $this->db->insert('user_session', array(
-                            'user_id' => $this->data()->id,
-                            'hash' => $hash
-                        ));
-                    } else {
-                        $hash = $hashCheck->getFirst()->$hash;
+        if (!$username && !$password && $this->exists()) {
+            Session::put($this->sessionName, $this->data()->id);
+        } else {
+            $user = $this->find($username);
+
+            if ($user) {
+                if ($this->data()->password === Hash::make($password, $this->data()->salt)) {
+                    Session::put($this->sessionName, $this->data()->id);
+                    if ($remember) {
+                        $hash = Hash::unique();
+                        $hashCheck = $this->db->get('user_session', array('user_id', '=', $this->data()->id));
+
+                        if (!$hashCheck->count()) {
+                            $this->db->insert('user_session', array(
+                                'user_id' => $this->data()->id,
+                                'hash' => $hash
+                            ));
+                        } else {
+                            $hash = $hashCheck->getFirst()->$hash;
+                        }
+
+                        Cookie::put($this->cookieName, $hash, Config::get('remember/cookie_expiry'));
                     }
-
-                    Cookie::put($this->cookieName, $hash, Config::get('remember/cookie_expiry'));
+                    return true;
                 }
-                return true;
             }
-            return false;
         }
+        return false;
     }
 
     public function logout()
     {
         Session::delete($this->sessionName);
+        Cookie::delete($this->cookieName);
+        $this->db->delete('user_session', array('user_id', '=', $this->data()->id));
     }
 
     public function data()
@@ -89,6 +98,11 @@ class User
     public function isLoggedIn()
     {
         return $this->isLoggegIn;
+    }
+
+    public function exists()
+    {
+        return (!empty($this->data()) ? true : false);
     }
 
 }
