@@ -48,7 +48,7 @@ class User
         return false;
     }
 
-    public function login($username = null, $password = null, $remember = null)
+    public function login($username = null, $password = null, $remember = false)
     {
         $user = $this->find($username);
 
@@ -89,6 +89,28 @@ class User
     public function isLoggedIn()
     {
         return $this->isLoggegIn;
+    }
+
+    public function update($fields = array(), $id = null, $table) {
+        if(!$id && $this->isLoggedIn()) {
+            $id = $this->data()->id;
+        }
+        if(!$this->db->update($table, $id, $fields)) {
+            throw new Exception('There was a problem updating.');
+        }
+    }
+
+    public function hasPermission($key) {
+        $group = $this->db->get('groups', array('id', '=', $this->data()->user_group));
+
+        if ($group->count()) {
+            $permissions = json_decode($group->getFirst()->permissions, true);
+
+            if($permissions[$key]) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }
